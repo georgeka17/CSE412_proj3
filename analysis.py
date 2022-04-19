@@ -18,35 +18,35 @@ def question2():
   answerNoise = 0.01
   return answerDiscount, answerNoise
 
-def question3a(): #prefer close exit, risking the cliff
+def question3a():
   answerDiscount = 0.5
   answerNoise = 0.01
   answerLivingReward = -2
   return answerDiscount, answerNoise, answerLivingReward
   # If not possible, return 'NOT POSSIBLE'
 
-def question3b(): # prefer close exit, avoid cliff
+def question3b():
   answerDiscount = 0.5
   answerNoise = 0.2
   answerLivingReward = -1
   return answerDiscount, answerNoise, answerLivingReward
   # If not possible, return 'NOT POSSIBLE'
-  #return 'NOT POSSIBLE'
-def question3c(): #prefer distant exit, risking cliff
+
+def question3c():
   answerDiscount = 0.9
   answerNoise = 0.01
   answerLivingReward = 0
   return answerDiscount, answerNoise, answerLivingReward
   # If not possible, return 'NOT POSSIBLE'
 
-def question3d(): # prefer distant exit, avoiding cliff
+def question3d():
   answerDiscount = 0.5
   answerNoise = 0.5
   answerLivingReward = 0.9
   return answerDiscount, answerNoise, answerLivingReward
   # If not possible, return 'NOT POSSIBLE'
 
-def question3e(): # never terminates
+def question3e():
   answerDiscount = 0.9
   answerNoise = 0.02
   answerLivingReward = 2
@@ -60,8 +60,8 @@ def question6():
   # If not possible, return 'NOT POSSIBLE'
   
 if __name__ == '__main__':
-  print ('Answers to analysis questions:')
+  print 'Answers to analysis questions:'
   import analysis
   for q in [q for q in dir(analysis) if q.startswith('question')]:
     response = getattr(analysis, q)()
-    print ('  Question %s:\t%s' % (q, str(response)))
+    print '  Question %s:\t%s' % (q, str(response))
