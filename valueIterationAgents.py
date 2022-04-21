@@ -33,34 +33,35 @@ class ValueIterationAgent(ValueEstimationAgent):
           mdp.getReward(state, action, nextState)
     """
     self.mdp = mdp
-    self.discount = discount # gamma
+    self.discount = discount
     self.iterations = iterations
-    self.values = util.Counter() # A Counter is a dict with default 0 #holds values of current state
+    self.values = util.Counter() # A Counter is a dict with default 0
      
     "*** YOUR CODE HERE ***"
     states = self.mdp.getStates()
     startState = self.mdp.getStartState()
 
-    #initialize current state dictionary values to be all 0
+    #intialize current state dictionary values to be all 0
     #while loop???
     for iteration in range(self.iterations):
-        nextValues = util.Counter() # holds values of next_state
-        for state in states: #
-            value = float('-inf');
-            actions = self.mdp.getPossibleActions(state);
-            for action in actions: #where's the end of the grid ??
-              statesAndProbs = (self.mdp.getTransitionStatesAndProbs(state, action))
-              sum = 0
-              for stateAndProb in statesAndProbs:
-                  sum += stateAndProb[1] * (self.mdp.getReward(state, action, stateAndProb[0]) + self.discount * self.values[stateAndProb[0]])
-              value = max(value, sum)
-            if value > float('-inf'):
-              nextValues[state] = value #update value in dictionary
-      
+      nextValues = util.Counter() # holds values of next_state
+      for state in states: #
+        value = float('-inf')
+        actions = self.mdp.getPossibleActions(state)
+        for action in actions: #where's the end of the grid ??
+          statesAndProbs = (self.mdp.getTransitionStatesAndProbs(state, action))
+          sum = 0
+          for stateAndProb in statesAndProbs:
+            sum += stateAndProb[1] * (self.mdp.getReward(state, action, stateAndProb[0]) \
+ + self.discount * self.values[stateAndProb[0]])
+          value = max(value, sum)
+        if value > float('-inf'):
+          nextValues[state] = value #update value in dictionary
+
         #after all values are up to date, next_state = curr_state
         for state in states:
           self.values[state] = nextValues[state]
-    
+
   def getValue(self, state):
     """
       Return the value of the state (computed in __init__).
@@ -80,7 +81,7 @@ class ValueIterationAgent(ValueEstimationAgent):
     statesAndProbs = self.mdp.getTransitionStatesAndProbs(state,action)
     q = 0
     for stateAndProb in statesAndProbs:
-        q += stateAndProb[1] * (self.mdp.getReward(state, action, stateAndProb[0]) + self.discount * self.values[stateAndProb[0]])
+      q += stateAndProb[1] * (self.mdp.getReward(state, action, stateAndProb[0]) + self.discount * self.values[stateAndProb[0]])
     return q
     #util.raiseNotDefined()
 

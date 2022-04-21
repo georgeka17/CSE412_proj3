@@ -10,7 +10,7 @@ from game import *
 from learningAgents import ReinforcementAgent
 from featureExtractors import *
 
-import random,util,math
+import mdp, random, util, math
 
 class QLearningAgent(ReinforcementAgent):
   """
@@ -36,9 +36,9 @@ class QLearningAgent(ReinforcementAgent):
   def __init__(self, **args):
     "You can initialize Q-values here..."
     ReinforcementAgent.__init__(self, **args)
-    "*** YOUR CODE HERE ***"    
-    self.qvalues = util.Counter() # A Counter is a dict with default 0 #holds values of current state
 
+    "*** YOUR CODE HERE ***"
+    self.qvalues = util.Counter() # A Counter is a dict with default 0 #holds values of current state
 
   def getQValue(self, state, action):
     """
@@ -47,10 +47,8 @@ class QLearningAgent(ReinforcementAgent):
       a state or (state,action) tuple
     """
     "*** YOUR CODE HERE ***"
-    statesAndProbs = self.mdp.getTransitionStatesAndProbs(state,action)
-    q = 0
-    for stateAndProb in statesAndProbs:
-        q += stateAndProb[1] * (self.mdp.getReward(state, action, stateAndProb[0]) + self.discount * self.values[stateAndProb[0]])
+    q = self.qvalues[(state, action)]
+    # how do I get 0.0 if have never seen?
     return q
     #util.raiseNotDefined()
 
@@ -63,8 +61,15 @@ class QLearningAgent(ReinforcementAgent):
       terminal state, you should return a value of 0.0.
     """
     "*** YOUR CODE HERE ***"
-    return self.qvalues[state]
-    util.raiseNotDefined()
+    actions = self.getLegalActions(state)
+    max_action = 0.0
+    if len(actions) > 0:
+      for action in actions:
+        actionValue = self.getQValue(state,action)
+        if actionValue > max_action:
+          max_action = actionValue
+    return max_action
+    #util.raiseNotDefined()
 
   def getPolicy(self, state):
     """
@@ -73,7 +78,7 @@ class QLearningAgent(ReinforcementAgent):
       you should return None.
     """
     "*** YOUR CODE HERE ***"
-    actions = self.mdp.getPossibleActions(state)
+    actions = self.getLegalActions(state)
     bestAction = None
     maxval = float('-inf')
     for action in actions:
@@ -100,6 +105,15 @@ class QLearningAgent(ReinforcementAgent):
     action = self.getPolicy(state)
     "*** YOUR CODE HERE ***"
     #util.raiseNotDefined()
+    p = self.epsilon
+    whichAction = util.flipCoin(p) #simulate binary varible with probability p of success
+    #returns True with probability p: want to do random action
+    if (whichAction == True):
+      action = random.choice(legalActions)
+    #if returns False: want to taek best policy action
+    # don't need to change action? or do else statement & define it as best one
+    # but I think it might already be best one
+    
     return action
 
   def update(self, state, action, nextState, reward):
@@ -112,9 +126,26 @@ class QLearningAgent(ReinforcementAgent):
       it will be called on your behalf
     """
     "*** YOUR CODE HERE ***"
-  #value = reward + gamma * #get qvalue 
+    #value = reward + gamme * #get qvalue
+    
+    oldQ = self.getQValue(state, action)
+    maxQprime = self.getValue(nextState)
 
-    util.raiseNotDefined()
+    #oldFeatureVector = self.featExtractor.getFeautures(state, action)
+
+    gamma = self.discount
+    #difference = (reward + gamma * maxQprime) - oldQ
+    alpha = self.alpha
+
+    #newQ = oldQ + alpha*difference
+    newQ = ((1-alpha)*oldQ) + (alpha*(reward + gamma*maxQprime))
+    self.qvalues[(state,action)] = newQ
+
+    #for feature in oldFeatureVector:
+    #  self.weights[feature] += a * difference * oldFeatureVector[feacture]
+    
+
+    #util.raiseNotDefined()
 
 class PacmanQAgent(QLearningAgent):
   "Exactly the same as QLearningAgent, but with different default parameters"
@@ -162,6 +193,7 @@ class ApproximateQAgent(PacmanQAgent):
 
     # You might want to initialize weights here.
     "*** YOUR CODE HERE ***"
+    self.weights = util.Counter() #dict with default 0, holds values of weights
 
   def getQValue(self, state, action):
     """
@@ -169,11 +201,11 @@ class ApproximateQAgent(PacmanQAgent):
       where * is the dotProduct operator
     """
     "*** YOUR CODE HERE ***"
-    statesAndProbs = self.mdp.getTransitionStatesAndProbs(state,action)
-    q = 0
-    for stateAndProb in statesAndProbs:
-        q += stateAndProb[1] * (self.mdp.getReward(state, action, stateAndProb[0]) + self.discount * self.values[stateAndProb[0]])
-    return q
+
+    w = self.weights
+    featureVector = self.featExtractor.getFeatures(state, action) #dict (feature vector)
+    
+    return w * featureVector
     #util.raiseNotDefined()
 
   def update(self, state, action, nextState, reward):
@@ -181,7 +213,22 @@ class ApproximateQAgent(PacmanQAgent):
        Should update your weights based on transition
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+
+    oldQ = self.getQValue(state, action) #get old Q value
+    newQ = self.getValue(nextState) #have to get Value, not QValue, because don't have action?
+    # also because getValue gets max Qvalue
+
+    oldFeatureVector = self.featExtractor.getFeatures(state, action)
+    
+    gamma = self.discount
+    difference = (reward + gamma*newQ) - oldQ
+    alpha = self.alpha
+
+    #update weight of each feature
+    for feature in oldFeatureVector:
+      #print 'self.weights[feature]: ', self.weights[feature]
+      self.weights[feature] += alpha * difference * oldFeatureVector[feature]
+    #util.raiseNotDefined()
 
   def final(self, state):
     "Called at the end of each game."
